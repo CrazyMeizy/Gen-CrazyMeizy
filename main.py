@@ -25,7 +25,7 @@ N_PIXELS = IMAGE_SIZE ** 2
 LATENT_SIZE = 16
 VAE_LATENT_SIZE = 16
 BATCH_SIZE = 256
-AE_EPOCHS = 20
+AE_EPOCHS = 50
 VAE_EPOCHS = 50
 LEARNING_RATE = 0.001
 N_SAMPLES = 10
@@ -98,8 +98,7 @@ class Autoencoder(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         return self.decoder(self.encoder(x))
 
-    def loss(self, x: Tensor, y: Tensor) -> tuple[Tensor, Tensor]:
-        # Сумма по пикселям, среднее по изображениям; AE не использует метки.
+    def loss(self, x: Tensor, _: Tensor) -> tuple[Tensor, Tensor]:
         reconstruction = F.binary_cross_entropy_with_logits(self(x), x, reduction="sum") / len(x)
         return reconstruction, x.new_zeros(())
 
@@ -124,7 +123,6 @@ class ConditionalVAE(nn.Module):
     def forward(self, x: Tensor, condition: Tensor) -> tuple[Tensor, Tensor, Tensor]:
         hidden = self.encoder(torch.cat((x, condition), dim=1))
         mean, log_variance = self.mean(hidden), self.log_variance(hidden)
-        # Репараметризация: случайность остаётся и при оценке VAE loss.
         z = mean + torch.exp(0.5 * log_variance) * torch.randn_like(mean)
         return self.decode(z, condition), mean, log_variance
 
