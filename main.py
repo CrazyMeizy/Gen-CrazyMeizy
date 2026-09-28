@@ -198,7 +198,6 @@ class SMOTEGenerator:
 
     def sample(self, count: int, rng: np.random.Generator) -> np.ndarray:
         indices = rng.integers(len(self.x), size=count)
-        # Первый сосед — сама исходная точка, выбираем из пяти остальных.
         neighbors = self.neighbors.kneighbors(self.x[indices], return_distance=False)[:, 1:]
         chosen = neighbors[np.arange(count), rng.integers(5, size=count)]
         weight = rng.random((count, 1))
