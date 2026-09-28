@@ -326,17 +326,23 @@ def main() -> None:
         "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     )
     print(f"Устройство: {device}", flush=True)
+
+    # 1
     data = load_dataset()
     for split in ("train", "validation", "test"):
         labels = getattr(data, split).tensors[1]
         print(f"{split}: {len(labels)} изображений; по классам {torch.bincount(labels).tolist()}", flush=True)
 
+    # 2
     ae = Autoencoder()
     ae_trainer = Trainer(ae, device)
     ae_result = ae_trainer.fit("ae", data, AE_EPOCHS)
     plot_reconstructions(ae, data, device)
+
+    # 3
     plot_generators(ae, data, device)
 
+    # 4-5
     cvae = ConditionalVAE()
     cvae_trainer = Trainer(cvae, device)
     cvae_result = cvae_trainer.fit("cvae", data, VAE_EPOCHS)
